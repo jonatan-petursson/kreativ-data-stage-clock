@@ -31,9 +31,9 @@ export const BackIcon = () => (
 
 export const QrIcon = () => (
   <svg {...base}>
-    <rect x="3.5" y="3.5" width="6" height="6" rx="1" />
-    <rect x="14.5" y="3.5" width="6" height="6" rx="1" />
-    <rect x="3.5" y="14.5" width="6" height="6" rx="1" />
-    <path d="M14.5 14.5h2.5v2.5M20.5 14.5v0M14.5 20.5h0M17 20.5h3.5V17" />
+    <rect x="3" y="3" width="7" height="7" rx="1" />
+    <rect x="14" y="3" width="7" height="7" rx="1" />
+    <rect x="3" y="14" width="7" height="7" rx="1" />
+    <path d="M14 14v7M18 14v4M21 14v7M18 21h3" />
   </svg>
 )

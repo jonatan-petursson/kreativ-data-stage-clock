@@ -121,15 +121,10 @@ function PasswordDialog(props: {
   )
 }
 
-/** QR code linking to this display, so people can open it on their phones. */
+/** QR code linking to this display, styled like the one in kreativ-data-phase. */
 function QrDialog({ onClose }: { onClose: () => void }) {
   const url = location.origin + location.pathname
-  const svg = useMemo(() => {
-    const qr = qrcode(0, 'M')
-    qr.addData(url)
-    qr.make()
-    return qr.createSvgTag({ margin: 2, scalable: true })
-  }, [url])
+  const svg = useMemo(() => buildQr(url), [url])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
@@ -138,16 +133,31 @@ function QrDialog({ onClose }: { onClose: () => void }) {
   }, [onClose])
 
   return (
-    <div className="scrim" onClick={onClose}>
-      <div className="card dialog qr-card" onClick={(e) => e.stopPropagation()}>
-        <div className="qr" dangerouslySetInnerHTML={{ __html: svg }} />
-        <div className="qr-url">{url.replace(/^https?:\/\//, '')}</div>
-        <button type="button" className="btn" onClick={onClose}>
-          Close
-        </button>
+    <div className="qr-modal" role="dialog" aria-modal="true" aria-label="QR code for this room" onClick={onClose}>
+      <div className="qr-card">
+        <div className="qr-svg" dangerouslySetInnerHTML={{ __html: svg }} />
+        <div className="qr-url">{url}</div>
       </div>
     </div>
   )
+}
+
+/** Black-on-white QR as an SVG with a 4-module quiet zone. */
+function buildQr(text: string) {
+  const qr = qrcode(0, 'M')
+  qr.addData(text)
+  qr.make()
+  const n = qr.getModuleCount()
+  const q = 4
+  const d = n + 2 * q
+  const out = [
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${d} ${d}" shape-rendering="crispEdges"><rect width="${d}" height="${d}" fill="#fff"/>`,
+  ]
+  for (let r = 0; r < n; r++)
+    for (let c = 0; c < n; c++)
+      if (qr.isDark(r, c)) out.push(`<rect x="${c + q}" y="${r + q}" width="1" height="1" fill="#000"/>`)
+  out.push('</svg>')
+  return out.join('')
 }
 
 const ROTATION_KEY = 'stage-clock:rotated'
