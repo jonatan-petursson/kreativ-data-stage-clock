@@ -25,6 +25,7 @@ function Display() {
   const [asking, setAsking] = useState(false)
   const [showQr, setShowQr] = useState(false)
   const [rotated, toggleRotated] = useRotation()
+  const canFullscreen = useCanFullscreen()
   useTick()
   useWakeLock()
 
@@ -55,9 +56,11 @@ function Display() {
         <button type="button" className="tool" aria-label="Show QR code" onClick={() => setShowQr(true)}>
           <QrIcon />
         </button>
-        <button type="button" className="tool" aria-label="Full screen" onClick={toggleFullscreen}>
-          <FullscreenIcon />
-        </button>
+        {canFullscreen ? (
+          <button type="button" className="tool" aria-label="Full screen" onClick={toggleFullscreen}>
+            <FullscreenIcon />
+          </button>
+        ) : null}
         <button type="button" className="tool" aria-label="Settings" onClick={openSettings}>
           <CogIcon />
         </button>
@@ -205,6 +208,13 @@ function useWakeLock() {
       lock?.release().catch(() => {})
     }
   }, [])
+}
+
+/** iPhone Safari has no fullscreen API, so the button would do nothing there. */
+function useCanFullscreen() {
+  const [can, setCan] = useState(false)
+  useEffect(() => setCan(document.fullscreenEnabled === true), [])
+  return can
 }
 
 function toggleFullscreen() {
