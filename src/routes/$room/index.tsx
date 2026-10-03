@@ -20,7 +20,7 @@ export const Route = createFileRoute('/$room/')({
 function Display() {
   const { room } = Route.useParams()
   const navigate = useNavigate()
-  const { state, connected, remaining } = useRoom(room)
+  const { state, connected, clients, remaining } = useRoom(room)
   const active = useActivity(3000)
   const [asking, setAsking] = useState(false)
   const [showQr, setShowQr] = useState(false)
@@ -52,7 +52,10 @@ function Display() {
 
       <div className="tools">
         {!connected && state ? <span className="offline" title="Reconnecting…" /> : null}
-        <span className="room-tag">{room}</span>
+        <span className="room-tag">
+          {room}
+          {connected && clients ? ` – ${clients.displays + clients.controls} connected` : null}
+        </span>
         <button
           type="button"
           className="tool"
