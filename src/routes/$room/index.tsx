@@ -2,7 +2,7 @@ import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 import qrcode from 'qrcode-generator'
 import { useEffect, useMemo, useState } from 'react'
 import { Clock } from '#/components/Clock'
-import { CogIcon, FullscreenIcon, QrIcon } from '#/components/icons'
+import { CogIcon, FullscreenIcon, QrIcon, RotateIcon } from '#/components/icons'
 import { ROOM_ID_RE } from '#/lib/protocol'
 import { recallSecret, rememberSecret, secretFor } from '#/lib/secret'
 import { useRoom, useTick } from '#/lib/useRoom'
@@ -37,7 +37,7 @@ function Display() {
 
   return (
     <main className={`display${active || asking || showQr ? '' : ' idle'}`}>
-      <div className={`stage${rotated ? ' rotated' : ''}`} onClick={toggleRotated}>
+      <div className={`stage${rotated ? ' rotated' : ''}`}>
         {state ? (
           <Clock
             ms={remaining()}
@@ -53,6 +53,15 @@ function Display() {
       <div className="tools">
         {!connected && state ? <span className="offline" title="Reconnecting…" /> : null}
         <span className="room-tag">{room}</span>
+        <button
+          type="button"
+          className="tool"
+          aria-label={rotated ? 'Landscape clock' : 'Portrait clock'}
+          aria-pressed={rotated}
+          onClick={toggleRotated}
+        >
+          <RotateIcon />
+        </button>
         <button type="button" className="tool" aria-label="Show QR code" onClick={() => setShowQr(true)}>
           <QrIcon />
         </button>

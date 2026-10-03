@@ -37,3 +37,10 @@ export const QrIcon = () => (
     <path d="M14 14v7M18 14v4M21 14v7M18 21h3" />
   </svg>
 )
+
+export const RotateIcon = () => (
+  <svg {...base}>
+    <rect x="8" y="3" width="8" height="13" rx="1.5" />
+    <path d="M4 14a8 8 0 0 0 8 7M4 14l-1.5 3M4 14l3 1.5" />
+  </svg>
+)
