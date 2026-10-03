@@ -49,8 +49,8 @@ npx tsc --noEmit
 
 ## Deploying
 
-Pushing to `main` deploys via GitHub Actions (`.github/workflows/deploy.yml`), which needs
-the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets. Or locally:
+Cloudflare Workers Builds is connected to this repo and deploys every push to `main`
+(build command `npm run build`, deploy command `npx wrangler deploy`). To deploy by hand:
 `npm run deploy`.
 
 The 7-segment font is [DSEG](https://www.keshikan.net/fonts-e.html) by keshikan (SIL OFL 1.1).
