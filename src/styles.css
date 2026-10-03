@@ -83,8 +83,13 @@ button, input, textarea { font: inherit; color: inherit; }
 
 /* ---------- display ---------- */
 
+/* The display is pinned to the screen: no scrolling, panning or overscroll bounce. */
+html:has(.display), html:has(.display) body { overflow: hidden; overscroll-behavior: none; }
 .display {
-  height: 100dvh;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  touch-action: none;
   display: flex;
   flex-direction: column;
   align-items: center;
