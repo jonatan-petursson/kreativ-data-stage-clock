@@ -6,10 +6,16 @@ export { Room } from './server/room'
 
 const WS_PATH = /^\/api\/rooms\/([^/]+)\/ws$/
 const RPI_PATH = /^\/([^/]+)\/rpi\.sh$/
+const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]'])
 
 export default {
   async fetch(request: Request, env: Env) {
     const url = new URL(request.url)
+
+    if (url.protocol === 'http:' && !LOCAL_HOSTS.has(url.hostname)) {
+      url.protocol = 'https:'
+      return Response.redirect(url.toString(), 301)
+    }
 
     const ws = url.pathname.match(WS_PATH)
     if (ws) {
