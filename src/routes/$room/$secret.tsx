@@ -27,7 +27,7 @@ const PRESETS = [5, 10, 15, 20, 30, 45, 60]
 function Control() {
   const { room, secret } = Route.useParams()
   const navigate = useNavigate()
-  const { state, connected, control, error, send, remaining } = useRoom(room, secret)
+  const { state, connected, control, error, clients, send, remaining } = useRoom(room, secret)
   const [time, setTime] = useState('')
   const [message, setMessage] = useState('')
   const [loaded, setLoaded] = useState(false)
@@ -89,6 +89,7 @@ function Control() {
           <div className="muted small">
             <span className={`dot${connected ? ' on' : ''}`} />
             {connected ? (control ? 'Connected' : 'Connecting…') : 'Reconnecting…'}
+            {connected && control && clients ? ` · ${describeClients(clients)}` : null}
           </div>
         </div>
       </header>
@@ -215,4 +216,13 @@ function RpiHint({ room }: { room: string }) {
       </code>
     </details>
   )
+}
+
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
+
+function describeClients({ displays, controls }: { displays: number; controls: number }) {
+  const others = controls - 1 // not counting this panel
+  return others > 0
+    ? `${plural(displays, 'display')}, ${plural(others, 'other panel')}`
+    : plural(displays, 'display')
 }

@@ -48,13 +48,12 @@ export class Room extends DurableObject<Env> {
     this.ctx.acceptWebSocket(server)
 
     let control = false
-    let claimed = false
     if (secret) {
       if (SECRET_RE.test(secret) && this.state.secret == null) {
         // First control panel to connect claims the room.
         this.state.secret = secret
         await this.save()
-        control = claimed = true
+        control = true
       } else if (this.state.secret === secret) {
         control = true
       } else {
@@ -63,9 +62,8 @@ export class Room extends DurableObject<Env> {
     }
     server.serializeAttachment({ control } satisfies Attachment)
     await this.touch()
-    // A claim changes `claimed` for everyone, so tell every client.
-    if (claimed) this.broadcast()
-    else this.send(server, this.snapshot(control))
+    // Everyone gets the new client count (and `claimed`, if this connection claimed the room).
+    this.broadcast()
 
     return new Response(null, { status: 101, webSocket: client })
   }
@@ -125,23 +123,36 @@ export class Room extends DurableObject<Env> {
     try {
       ws.close(code === 1005 ? 1000 : code)
     } catch {}
+    this.broadcast()
   }
 
-  private snapshot(control: boolean): ServerMessage {
+  webSocketError() {
+    this.broadcast()
+  }
+
+  /** Open sockets with their role. A socket that is closing is left out. */
+  private clients() {
+    return this.ctx
+      .getWebSockets()
+      .filter((ws) => ws.readyState === WebSocket.OPEN)
+      .map((ws) => ({ ws, ...((ws.deserializeAttachment() ?? { control: false }) as Attachment) }))
+  }
+
+  private snapshot(control: boolean, clients = this.clients()): ServerMessage {
     const { secret, ...rest } = this.state
+    const controls = clients.filter((c) => c.control).length
     return {
       type: 'state',
       state: { ...rest, claimed: secret != null },
       serverNow: Date.now(),
       control,
+      clients: { displays: clients.length - controls, controls },
     }
   }
 
   private broadcast() {
-    for (const ws of this.ctx.getWebSockets()) {
-      const { control } = (ws.deserializeAttachment() ?? { control: false }) as Attachment
-      this.send(ws, this.snapshot(control))
-    }
+    const clients = this.clients()
+    for (const { ws, control } of clients) this.send(ws, this.snapshot(control, clients))
   }
 
   private send(ws: WebSocket, msg: ServerMessage) {

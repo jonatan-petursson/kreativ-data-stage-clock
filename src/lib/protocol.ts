@@ -16,7 +16,14 @@ export type TimerState = {
 }
 
 export type ServerMessage =
-  | { type: 'state'; state: TimerState; serverNow: number; control: boolean }
+  | {
+      type: 'state'
+      state: TimerState
+      serverNow: number
+      control: boolean
+      /** Open connections in the room, including the receiver. */
+      clients: { displays: number; controls: number }
+    }
   | { type: 'error'; error: 'bad-secret' | 'not-authorized' | 'bad-request' }
 
 export type ClientMessage =

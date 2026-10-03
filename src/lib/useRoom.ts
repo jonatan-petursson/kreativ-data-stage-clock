@@ -7,6 +7,8 @@ export type RoomConnection = {
   /** True once the server has accepted our secret. */
   control: boolean
   error: string | null
+  /** Open connections in the room, including this one. */
+  clients: { displays: number; controls: number } | null
   send: (msg: ClientMessage) => void
   /** Remaining ms right now, corrected for the difference between our clock and the server's. */
   remaining: () => number
@@ -18,6 +20,7 @@ export function useRoom(roomId: string, secret?: string): RoomConnection {
   const [connected, setConnected] = useState(false)
   const [control, setControl] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [clients, setClients] = useState<RoomConnection['clients']>(null)
   const ws = useRef<WebSocket | null>(null)
   const offset = useRef(0) // serverNow - Date.now()
   const stateRef = useRef<TimerState | null>(null)
@@ -48,6 +51,7 @@ export function useRoom(roomId: string, secret?: string): RoomConnection {
           stateRef.current = msg.state
           setState(msg.state)
           setControl(msg.control)
+          setClients(msg.clients)
         } else if (msg.type === 'error') {
           setError(msg.error)
         }
@@ -90,7 +94,7 @@ export function useRoom(roomId: string, secret?: string): RoomConnection {
     return s ? remainingMs(s, Date.now() + offset.current) : 0
   }, [])
 
-  return { state, connected, control, error, send, remaining }
+  return { state, connected, control, error, clients, send, remaining }
 }
 
 /** Re-renders a few times per second so the clock can tick. */
