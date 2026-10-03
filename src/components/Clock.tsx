@@ -10,13 +10,15 @@ type Props = {
    */
   maxHeight?: number
   viewport?: boolean
+  /** The clock is rotated 90°, so the viewport's width limits its height. */
+  rotated?: boolean
 }
 
 /**
  * Seven-segment countdown. Unlit segments are drawn as a faint "8" underlay, like a
  * real LED display, and the digits scale to fill the container's width.
  */
-export function Clock({ ms, running, maxHeight = 0.8, viewport = false }: Props) {
+export function Clock({ ms, running, maxHeight = 0.8, viewport = false, rotated = false }: Props) {
   const text = formatClock(ms)
   const ghost = text.replace(/[0-9-]/g, '8')
   const tone = ms <= -1000 ? 'over' : ms <= 60_000 ? 'warn' : 'ok'
@@ -33,7 +35,8 @@ export function Clock({ ms, running, maxHeight = 0.8, viewport = false }: Props)
       const w = digits.offsetWidth
       const h = digits.offsetHeight
       if (!w || !h) return
-      const maxH = (viewport ? window.innerHeight : box.clientHeight) * maxHeight
+      const viewportH = rotated ? window.innerWidth : window.innerHeight
+      const maxH = (viewport ? viewportH : box.clientHeight) * maxHeight
       const size = Math.min((box.clientWidth * 0.94 * 100) / w, (maxH * 100) / h)
       digits.style.fontSize = `${Math.max(12, size)}px`
     }
@@ -46,7 +49,7 @@ export function Clock({ ms, running, maxHeight = 0.8, viewport = false }: Props)
       ro.disconnect()
       window.removeEventListener('resize', fit)
     }
-  }, [ghost, maxHeight, viewport])
+  }, [ghost, maxHeight, viewport, rotated])
 
   return (
     <div className={`clock-box${viewport ? ' clock-box-auto' : ''}`} ref={boxRef}>

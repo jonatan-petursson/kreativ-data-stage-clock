@@ -24,6 +24,7 @@ function Display() {
   const active = useActivity(3000)
   const [asking, setAsking] = useState(false)
   const [showQr, setShowQr] = useState(false)
+  const [rotated, toggleRotated] = useRotation()
   useTick()
   useWakeLock()
 
@@ -35,10 +36,18 @@ function Display() {
 
   return (
     <main className={`display${active || asking || showQr ? '' : ' idle'}`}>
-      {state ? (
-        <Clock ms={remaining()} running={state.endsAt != null} maxHeight={state.message ? 0.55 : 0.7} viewport />
-      ) : null}
-      {state?.message ? <p className="message">{state.message}</p> : null}
+      <div className={`stage${rotated ? ' rotated' : ''}`} onClick={toggleRotated}>
+        {state ? (
+          <Clock
+            ms={remaining()}
+            running={state.endsAt != null}
+            maxHeight={state.message ? 0.55 : 0.7}
+            viewport
+            rotated={rotated}
+          />
+        ) : null}
+        {state?.message ? <p className="message">{state.message}</p> : null}
+      </div>
 
       <div className="tools">
         {!connected && state ? <span className="offline" title="Reconnecting…" /> : null}
@@ -136,6 +145,26 @@ function QrDialog({ onClose }: { onClose: () => void }) {
       </div>
     </div>
   )
+}
+
+const ROTATION_KEY = 'stage-clock:rotated'
+
+/** Whether the clock is turned 90°, remembered per device (e.g. a portrait-mounted screen). */
+function useRotation() {
+  const [rotated, setRotated] = useState(false)
+  useEffect(() => {
+    try {
+      setRotated(localStorage.getItem(ROTATION_KEY) === '1')
+    } catch {}
+  }, [])
+  const toggle = () =>
+    setRotated((r) => {
+      try {
+        localStorage.setItem(ROTATION_KEY, r ? '0' : '1')
+      } catch {}
+      return !r
+    })
+  return [rotated, toggle] as const
 }
 
 /** True while the pointer/keyboard/touch has been used within the last `ms`. */
